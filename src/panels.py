@@ -1,4 +1,5 @@
 import flet as ft
+import secrets
 
 
 class Label(ft.Text):
@@ -10,23 +11,67 @@ class OptionCheckbox(ft.Checkbox):
         super().__init__(label=txt, value=default)
         self.chars = chars
 
+class PasswordLen(ft.Slider):
+    def __init__(self):
+        super().__init__(value=16, min=8, max=64, divisions=56, width=300, label="{value} символов")
+
+class GeneratePassword(ft.FilledButton):
+    def __init__(self, txt, click_event):
+        super().__init__(content=txt, on_click=click_event, width=300, height=50)
+
+class PasswordWindow(ft.TextField):
+    def __init__(self, text):
+        super().__init__(value=text, read_only=True)
+
+class CopyButton(ft.Button):
+    def __init__(self, copyText):
+        super().__init__(icon=ft.Icons.COPY, action=ft.CopyToClipboard(copyText))
+
 
 class PasswordPanel(ft.Column):
     def __init__(self):
-        super().__init__(spacing=10)
+        super().__init__(spacing=5)
         self.dig = OptionCheckbox(txt="цифры", default=True, chars="0123456789")
         self.spec = OptionCheckbox(txt="спец. символы", default=True, chars="`~!@\"'#№$;%^:&?*+-_(){}[]/\\,.|")
         self.lowers = OptionCheckbox(txt="маленькие буквы", default=True, chars="abcdefghijklmnopqrstuvwxyz")
         self.uppers = OptionCheckbox(txt="большие буквы", default=True, chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-        self.repeat = OptionCheckbox(txt="повторения", default=True, chars="")
+        self.passwordLen = PasswordLen()
+
+        self.generatePassword = GeneratePassword("Сгенерировать пароль", click_event=self.generate)
+        self.passwordWindow = PasswordWindow(text="")
+        self.copyButton = CopyButton(copyText=self.passwordWindow.value)
+
         self.controls = [
-            Label(txt="Настройки пароля", size=25),
+            ft.Row(
+                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                controls=[
+                    Label(txt="Настройки пароля", size=25),
+                    Label(txt="Генерация пароля", size=25)
+                ]
+            ),
             self.dig,
-            self.spec,
-            self.lowers,
+            ft.Row(
+                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                controls=[self.spec, self.generatePassword]
+            ),
+            ft.Row(
+                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                controls=[
+                    self.lowers,
+                    ft.Row(controls=[self.passwordWindow, self.copyButton])
+                ]
+            ),
             self.uppers,
-            self.repeat,
+            ft.Row(
+                controls=[self.passwordLen, Label(txt="Длина пароля", size=16)]
+            )
         ]
+
+    def generate(self):
+        chars = self.get_chars()
+        if not chars: return
+        self.passwordWindow.value = "".join([secrets.choice(chars) for _ in range(int(self.passwordLen.value))])
+        self.copyButton.action = ft.CopyToClipboard(self.passwordWindow.value)
 
     def get_chars(self):
         chars = ""
@@ -40,5 +85,5 @@ class CryptoPanel(ft.Column):
         super().__init__(spacing=10)
         self.controls = [
             Label(txt="Шифрование и Дешифрование", size=25),
-            ft.Text(value="потом чего-нибудь добавлю"),
+            ft.Text(value="потом чего-нибудь добавлю")
         ]

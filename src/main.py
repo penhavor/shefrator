@@ -12,7 +12,7 @@ class Switch(ft.FilledButton):
         )
 
 
-class App:
+class Main:
     def __init__(self, page):
         self.page = page
         self.active = ""
@@ -63,8 +63,8 @@ class App:
 
     @staticmethod
     def main(page: ft.Page):
-        App(page).create()
+        Main(page).create()
 
 
 if __name__ == "__main__":
-    ft.run(App.main)
+    ft.run(Main.main)
