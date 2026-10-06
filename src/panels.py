@@ -1,5 +1,6 @@
 import flet as ft
 import secrets
+from abc import ABC, abstractmethod
 
 
 class Label(ft.Text):
@@ -28,6 +29,32 @@ class CopyButton(ft.Button):
         super().__init__(icon=ft.Icons.COPY, action=ft.CopyToClipboard(copyText))
 
 
+class Generate(ABC):
+    @abstractmethod
+    def work(self):
+        pass
+
+class Password(Generate):
+    def __init__(self, allChars: tuple, passwordLen, passwordWindow, copyButton):
+        self.allChars = allChars
+        self.passwordLen = passwordLen
+        self.passwordWindow = passwordWindow
+        self.copyButton = copyButton
+
+    def work(self):
+        chars = ""
+        for i in self.allChars:
+            if i.value:
+                chars += i.chars
+        if not chars:
+            self.passwordWindow.value = "Пароль нельзя сгенерировать!"
+            self.copyButton.disabled = True
+        else:
+            self.copyButton.disabled = False
+            self.passwordWindow.value = "".join([secrets.choice(chars) for _ in range(int(self.passwordLen.value))])
+            self.copyButton.action = ft.CopyToClipboard(self.passwordWindow.value)
+
+
 class PasswordPanel(ft.Column):
     def __init__(self):
         super().__init__(spacing=5)
@@ -40,6 +67,7 @@ class PasswordPanel(ft.Column):
         self.generatePassword = GeneratePassword("Сгенерировать пароль", click_event=self.generate)
         self.passwordWindow = PasswordWindow(text="")
         self.copyButton = CopyButton(copyText=self.passwordWindow.value)
+        self.copyButton.disabled = True
 
         self.controls = [
             ft.Row(
@@ -68,22 +96,14 @@ class PasswordPanel(ft.Column):
         ]
 
     def generate(self):
-        chars = self.get_chars()
-        if not chars: return
-        self.passwordWindow.value = "".join([secrets.choice(chars) for _ in range(int(self.passwordLen.value))])
-        self.copyButton.action = ft.CopyToClipboard(self.passwordWindow.value)
-
-    def get_chars(self):
-        chars = ""
-        for box in (self.dig, self.spec, self.lowers, self.uppers):
-            if box.value:
-                chars += box.chars
-        return chars
+        allChars = (self.dig, self.spec, self.lowers, self.uppers)
+        password = Password(allChars, self.passwordLen, self.passwordWindow, self.copyButton)
+        password.work()
 
 class CryptoPanel(ft.Column):
     def __init__(self):
         super().__init__(spacing=10)
         self.controls = [
             Label(txt="Шифрование и Дешифрование", size=25),
-            ft.Text(value="потом чего-нибудь добавлю")
+            ft.Text(value="потом чего-нибудь добавлю...")
         ]

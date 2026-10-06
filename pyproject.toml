@@ -1,7 +1,7 @@
 [project]
-name = "shefrator"
+name = "SheFraTor"
 version = "0.1.0"
-description = "Шифроватор файлов и текстов"
+description = "Шифратор файлов и текстов"
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [
@@ -29,7 +29,7 @@ pythonpath = ["src"]
 
 [tool.flet]
 org = "com.mycompany"
-product = "shefrator"
+product = "SheFraTor"
 company = "Flet"
 copyright = "Copyright (C) 2023-2026 by Flet"
 

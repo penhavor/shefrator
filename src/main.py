@@ -1,5 +1,6 @@
 import flet as ft
 import panels as pn
+import os
 
 
 class Switch(ft.FilledButton):
@@ -15,12 +16,16 @@ class Switch(ft.FilledButton):
 class Main:
     def __init__(self, page):
         self.page = page
+        page.window.icon = "icon.ico"
         self.active = ""
+
         self.password = Switch(txt="Сгенерировать Пароль/Ключ", click_event=self.password_click)
         self.crypt = Switch(txt="Шифрование и Дешифрование", click_event=self.crypto_click)
         self.body = ft.Container(expand=True, padding=20)
         self.panel_password = pn.PasswordPanel()
         self.panel_crypto = pn.CryptoPanel()
+
+        self.password_click()
 
     def color_set(self):
         if self.active == "key":
