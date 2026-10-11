@@ -1,7 +1,7 @@
 [project]
 name = "SheFraTor"
 version = "0.1.0"
-description = "Шифратор файлов и текстов"
+description = "Генератор паролей и шифратор текстов"
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [

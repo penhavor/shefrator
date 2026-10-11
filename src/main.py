@@ -1,6 +1,5 @@
 import flet as ft
 import panels as pn
-import os
 
 
 class Switch(ft.FilledButton):
