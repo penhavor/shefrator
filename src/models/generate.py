@@ -8,44 +8,11 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 
-class Label(ft.Text):
-    def __init__(self, txt, size):
-        super().__init__(value=txt, size=size, weight=ft.FontWeight.BOLD)
-
-class OptionCheckbox(ft.Checkbox):
-    def __init__(self, txt, default, chars):
-        super().__init__(label=txt, value=default)
-        self._chars = chars
-
-    @property
-    def chars(self):
-        return self._chars
-
-    @chars.setter
-    def chars(self, value):
-        self._chars = value
-
-class PasswordLen(ft.Slider):
-    def __init__(self):
-        super().__init__(value=16, min=8, max=64, divisions=56, width=300, label="{value} символов")
-
-class GeneratePassword(ft.FilledButton):
-    def __init__(self, txt, click_event):
-        super().__init__(content=txt, on_click=click_event, width=300, height=50)
-
-class PasswordWindow(ft.TextField):
-    def __init__(self, text):
-        super().__init__(value=text, read_only=True)
-
-class CopyButton(ft.Button):
-    def __init__(self, copyText):
-        super().__init__(icon=ft.Icons.COPY, action=ft.CopyToClipboard(copyText))
-
-
 class Generate(ABC):
     @abstractmethod
     def work(self):
         pass
+
 
 class Password(Generate):
     def __init__(self, allChars: tuple, passwordLen, passwordWindow, copyButton):
@@ -117,6 +84,7 @@ class Password(Generate):
 
     def __str__(self):
         return f"Генерация пароля длиной {int(self._passwordLen.value)}"
+
 
 class Encrypt(Generate):
     def __init__(self, sourceWindow, keyWindow, resultWindow, copyButton, cryptT):
@@ -212,104 +180,3 @@ class Encrypt(Generate):
         if self._cryptT == "crypt":
             return "Шифрование текста"
         return "Расшифровка текста"
-
-
-class PasswordPanel(ft.Column):
-    def __init__(self):
-        super().__init__(spacing=5)
-        self.dig = OptionCheckbox(txt="цифры", default=True, chars="0123456789")
-        self.spec = OptionCheckbox(txt="спец. символы", default=True, chars="`~!@\"'#№$;%^:&?*+-_(){}[]/\\,.|")
-        self.lowers = OptionCheckbox(txt="маленькие буквы", default=True, chars="abcdefghijklmnopqrstuvwxyz")
-        self.uppers = OptionCheckbox(txt="большие буквы", default=True, chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-        self.passwordLen = PasswordLen()
-
-        self.generatePassword = GeneratePassword("Сгенерировать пароль", click_event=self.generate)
-        self.passwordWindow = PasswordWindow(text="")
-        self.copyButton = CopyButton(copyText=self.passwordWindow.value)
-        self.copyButton.disabled = True
-
-        self.controls = [
-            ft.Row(
-                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-                controls=[
-                    Label(txt="Настройки пароля", size=25),
-                    Label(txt="Генерация пароля", size=25)
-                ]
-            ),
-            self.dig,
-            ft.Row(
-                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-                controls=[self.spec, self.generatePassword]
-            ),
-            ft.Row(
-                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-                controls=[
-                    self.lowers,
-                    ft.Row(controls=[self.passwordWindow, self.copyButton])
-                ]
-            ),
-            self.uppers,
-            ft.Row(
-                controls=[self.passwordLen, Label(txt="Длина пароля", size=16)]
-            )
-        ]
-
-    def generate(self):
-        allChars = (self.dig, self.spec, self.lowers, self.uppers)
-        password = Password(allChars, self.passwordLen, self.passwordWindow, self.copyButton)
-        password.work()
-
-
-class TextWindow(ft.TextField):
-    def __init__(self, text, hint, read_only=False):
-        super().__init__(
-            value=text,
-            hint_text=hint,
-            read_only=read_only,
-            multiline=True,
-            min_lines=4,
-            max_lines=8,
-            width=300
-        )
-
-
-class CryptoPanel(ft.Column):
-    def __init__(self):
-        super().__init__(spacing=5)
-        self.sourceWindow = TextWindow(text="", hint="текст")
-        self.keyWindow = TextWindow(text="", hint="ключ")
-        self.resultWindow = TextWindow(text="", hint="результат", read_only=True)
-        self.copyButton = CopyButton(copyText=self.resultWindow.value)
-        self.copyButton.disabled = True
-        self.encryptButton = GeneratePassword("Зашифровать", click_event=self.encrypt)
-        self.decryptButton = GeneratePassword("Расшифровать", click_event=self.decrypt)
-
-        self.controls = [
-            ft.Row(
-                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-                controls=[
-                    Label(txt="Исходный текст", size=25),
-                    Label(txt="Результат", size=25)
-                ]
-            ),
-            ft.Row(
-                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-                controls=[
-                    self.sourceWindow,
-                    ft.Row(controls=[self.copyButton, self.resultWindow])
-                ]
-            ),
-            ft.Row(
-                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-                controls=[
-                    self.keyWindow,
-                    ft.Row(controls=[self.encryptButton, self.decryptButton])
-                ]
-            )
-        ]
-
-    def encrypt(self):
-        Encrypt(self.sourceWindow, self.keyWindow, self.resultWindow, self.copyButton, cryptT="crypt").work()
-
-    def decrypt(self):
-        Encrypt(self.sourceWindow, self.keyWindow, self.resultWindow, self.copyButton, cryptT="uncrypt").work()
